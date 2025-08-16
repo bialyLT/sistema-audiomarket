@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     
     # Local apps
     'core',
+    'apps.users',
 ]
 
 MIDDLEWARE = [
@@ -108,6 +109,14 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Custom User Model
+AUTH_USER_MODEL = 'users.User'
+
+# Login URLs
+LOGIN_URL = 'users:login'
+LOGIN_REDIRECT_URL = 'core:home'
+LOGOUT_REDIRECT_URL = 'core:home'
 
 # Logging configuration
 LOGGING = {

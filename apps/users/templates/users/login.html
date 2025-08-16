@@ -1,0 +1,99 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block header %}Bienvenido de Nuevo{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            <h2 class="text-3xl font-extrabold text-base-content">
+                Iniciar Sesión
+            </h2>
+            <p class="mt-2 text-sm text-base-content/70">
+                ¿No tienes cuenta? 
+                <a href="{% url 'users:register' %}" class="link link-primary">Regístrate gratis</a>
+            </p>
+        </div>
+
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-error">
+                            <svg class="stroke-current shrink-0 w-6 h-6" fill="none" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span>{{ form.non_field_errors }}</span>
+                        </div>
+                    {% endif %}
+
+                    <div class="form-control">
+                        <label class="label" for="{{ form.username.id_for_label }}">
+                            <span class="label-text font-semibold">{{ form.username.label }}</span>
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error">{{ form.username.errors.0 }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="{{ form.password.id_for_label }}">
+                            <span class="label-text font-semibold">{{ form.password.label }}</span>
+                            <span class="label-text-alt">
+                                <a href="#" class="link link-hover link-primary">¿Olvidaste tu contraseña?</a>
+                            </span>
+                        </label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error">{{ form.password.errors.0 }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="cursor-pointer label">
+                            <span class="label-text">Recordar mi sesión</span>
+                            <input type="checkbox" class="checkbox checkbox-primary" name="remember_me">
+                        </label>
+                    </div>
+
+                    <div class="form-control">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                            </svg>
+                            Iniciar Sesión
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="divider">o continúa con</div>
+        
+        <div class="grid grid-cols-2 gap-4">
+            <button class="btn btn-outline">
+                <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                </svg>
+                Google
+            </button>
+            <button class="btn btn-outline">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                </svg>
+                Twitter
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

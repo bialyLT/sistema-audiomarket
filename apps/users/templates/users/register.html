@@ -1,0 +1,151 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Registro - Marketplace de Audios{% endblock %}
+
+{% block header %}Crear Cuenta{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            <h2 class="text-3xl font-extrabold text-base-content">
+                Únete al Marketplace de Audios
+            </h2>
+            <p class="mt-2 text-sm text-base-content/70">
+                ¿Ya tienes cuenta? 
+                <a href="{% url 'users:login' %}" class="link link-primary">Inicia sesión</a>
+            </p>
+        </div>
+
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-error">
+                            <svg class="stroke-current shrink-0 w-6 h-6" fill="none" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span>{{ form.non_field_errors }}</span>
+                        </div>
+                    {% endif %}
+
+                    <div class="form-control">
+                        <label class="label" for="{{ form.user_type.id_for_label }}">
+                            <span class="label-text font-semibold">{{ form.user_type.label }}</span>
+                        </label>
+                        {{ form.user_type }}
+                        {% if form.user_type.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error">{{ form.user_type.errors.0 }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-control">
+                            <label class="label" for="{{ form.first_name.id_for_label }}">
+                                <span class="label-text">{{ form.first_name.label }}</span>
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ form.first_name.errors.0 }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-control">
+                            <label class="label" for="{{ form.last_name.id_for_label }}">
+                                <span class="label-text">{{ form.last_name.label }}</span>
+                            </label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ form.last_name.errors.0 }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="{{ form.email.id_for_label }}">
+                            <span class="label-text">{{ form.email.label }}</span>
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error">{{ form.email.errors.0 }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="{{ form.username.id_for_label }}">
+                            <span class="label-text">{{ form.username.label }}</span>
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error">{{ form.username.errors.0 }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="{{ form.phone.id_for_label }}">
+                            <span class="label-text">{{ form.phone.label }} (opcional)</span>
+                        </label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error">{{ form.phone.errors.0 }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="{{ form.password1.id_for_label }}">
+                            <span class="label-text">{{ form.password1.label }}</span>
+                        </label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error">{{ form.password1.errors.0 }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="{{ form.password2.id_for_label }}">
+                            <span class="label-text">{{ form.password2.label }}</span>
+                        </label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error">{{ form.password2.errors.0 }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                            </svg>
+                            Crear Cuenta
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <p class="text-xs text-base-content/60">
+                Al registrarte aceptas nuestros términos de servicio y política de privacidad
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
