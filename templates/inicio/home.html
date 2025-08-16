@@ -1,0 +1,45 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block header %}Plantilla para proyectos{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <div class="welcome-section">
+        <h2>{{ welcome_message }}</h2>
+        <p>Sistema base para hacer cualquier cosa en django.</p>
+    </div>
+    
+    <div class="dashboard-cards">
+        <div class="card">
+            <h3>📊 Ventas</h3>
+            <p>Gestiona las ventas diarias</p>
+            <a href="#" class="btn btn-primary">Ver Ventas</a>
+        </div>
+        
+        <div class="card">
+            <h3>👥 Clientes</h3>
+            <p>Administra tu cartera de clientes</p>
+            <a href="#" class="btn btn-primary">Ver Clientes</a>
+        </div>
+        
+        <div class="card">
+            <h3>📦 Productos</h3>
+            <p>Catálogo y control de inventario</p>
+            <a href="#" class="btn btn-primary">Ver Productos</a>
+        </div>
+        
+        <div class="card">
+            <h3>📈 Reportes</h3>
+            <p>Análisis y estadísticas</p>
+            <a href="#" class="btn btn-primary">Ver Reportes</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+</script>
+{% endblock %}

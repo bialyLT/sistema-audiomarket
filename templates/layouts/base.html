@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mi Proyecto Django{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+</head>
+<body>
+    <header>
+        <nav>
+            <h1>{% block header %}Proyecto Base Django{% endblock %}</h1>
+        </nav>
+    </header>
+    
+    <main>
+        {% block content %}
+        <!-- El contenido específico de cada página va aquí -->
+        {% endblock %}
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 bialyLT</p>
+    </footer>
+    
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>
