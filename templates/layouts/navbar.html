@@ -60,11 +60,12 @@
   <div class="navbar-center hidden lg:flex">
     <ul class="menu menu-horizontal px-1">
       <li><a href="{% url 'core:home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Inicio</a></li>
+      <li><a href="{% url 'audios:list' %}" class="{% if request.resolver_match.app_name == 'audios' %}active{% endif %}">Audios</a></li>
       <li>
         <details>
           <summary>Catálogo</summary>
           <ul class="p-2 bg-base-200 shadow-xl min-w-52">
-            <li><a href="#">
+            <li><a href="{% url 'audios:list' %}">
               <span class="text-2xl">🎵</span>
               <div>
                 <div class="font-bold">Música</div>
@@ -95,7 +96,7 @@
           </ul>
         </details>
       </li>
-      <li><a href="#">Explorar</a></li>
+      <li><a href="{% url 'audios:list' %}">Explorar</a></li>
       {% if user.is_authenticated and user.is_seller %}
       <li><a href="{% url 'users:dashboard_seller' %}" class="text-secondary">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,22 +201,28 @@
             Mis Compras
             <span class="badge badge-sm">2</span>
           </a></li>
-          <li><a href="#">
+          <li><a href="{% url 'audios:favorites' %}">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
             </svg>
-            Lista de Deseos
+            Mis Favoritos
             <span class="badge badge-sm">5</span>
           </a></li>
           {% endif %}
           
           {% if user.is_seller %}
-          <li><a href="{% url 'users:dashboard_seller' %}">
+          <li><a href="{% url 'audios:my_audios' %}">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
             </svg>
-            Mi Música
+            Mis Audios
             <span class="badge badge-sm">12</span>
+          </a></li>
+          <li><a href="{% url 'audios:upload' %}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            Subir Audio
           </a></li>
           <li><a href="#">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,0 +1,518 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - AudioMarket{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold mb-4">{{ title }}</h1>
+            <p class="text-base-content/70">
+                {% if audio %}
+                    Actualiza la información de tu audio para mantenerlo relevante en el marketplace.
+                {% else %}
+                    Comparte tu creatividad con el mundo. Sube tu audio y comienza a vender.
+                {% endif %}
+            </p>
+        </div>
+        
+        <!-- Formulario -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-error">
+                            <svg class="stroke-current shrink-0 w-6 h-6" fill="none" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                {% for error in form.non_field_errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Información básica -->
+                    <div class="card bg-base-50">
+                        <div class="card-body">
+                            <h3 class="card-title text-lg mb-4">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Información Básica
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 gap-4">
+                                <!-- Título -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ form.title.id_for_label }}">
+                                        <span class="label-text font-semibold">{{ form.title.label }}</span>
+                                        <span class="label-text-alt text-error">*</span>
+                                    </label>
+                                    {{ form.title }}
+                                    {% if form.title.errors %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ form.title.errors.0 }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Descripción -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ form.description.id_for_label }}">
+                                        <span class="label-text font-semibold">{{ form.description.label }}</span>
+                                        <span class="label-text-alt text-error">*</span>
+                                    </label>
+                                    {{ form.description }}
+                                    <label class="label">
+                                        <span class="label-text-alt">
+                                            Describe tu audio, su uso recomendado, instrumentos utilizados, estado de ánimo, etc.
+                                        </span>
+                                    </label>
+                                    {% if form.description.errors %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ form.description.errors.0 }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Clasificación -->
+                    <div class="card bg-base-50">
+                        <div class="card-body">
+                            <h3 class="card-title text-lg mb-4">
+                                <i class="fas fa-tags mr-2"></i>
+                                Clasificación
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Categoría -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ form.category.id_for_label }}">
+                                        <span class="label-text font-semibold">{{ form.category.label }}</span>
+                                        <span class="label-text-alt text-error">*</span>
+                                    </label>
+                                    {{ form.category }}
+                                    {% if form.category.errors %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ form.category.errors.0 }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Género -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ form.genre.id_for_label }}">
+                                        <span class="label-text font-semibold">{{ form.genre.label }}</span>
+                                        <span class="label-text-alt text-error">*</span>
+                                    </label>
+                                    {{ form.genre }}
+                                    {% if form.genre.errors %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ form.genre.errors.0 }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Tags -->
+                            <div class="form-control mt-4">
+                                <label class="label">
+                                    <span class="label-text font-semibold">{{ form.tags.label }}</span>
+                                    <span class="label-text-alt">Opcional</span>
+                                </label>
+                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                    {% for choice in form.tags %}
+                                        <label class="cursor-pointer label justify-start">
+                                            {{ choice.tag }}
+                                            <span class="label-text ml-2">{{ choice.choice_label }}</span>
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                                {% if form.tags.errors %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ form.tags.errors.0 }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Archivos -->
+                    <div class="card bg-base-50">
+                        <div class="card-body">
+                            <h3 class="card-title text-lg mb-4">
+                                <i class="fas fa-file-audio mr-2"></i>
+                                Archivos
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Archivo de audio -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ form.audio_file.id_for_label }}">
+                                        <span class="label-text font-semibold">{{ form.audio_file.label }}</span>
+                                        <span class="label-text-alt text-error">*</span>
+                                    </label>
+                                    {{ form.audio_file }}
+                                    <label class="label">
+                                        <span class="label-text-alt">
+                                            Formatos: MP3, WAV, FLAC, AAC, OGG (máx. 50MB)
+                                        </span>
+                                    </label>
+                                    {% if form.audio_file.errors %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ form.audio_file.errors.0 }}</span>
+                                        </label>
+                                    {% endif %}
+                                    
+                                    <!-- Preview del audio actual -->
+                                    {% if audio and audio.audio_file %}
+                                        <div class="mt-2">
+                                            <p class="text-sm text-base-content/70 mb-2">Archivo actual:</p>
+                                            <audio controls class="w-full">
+                                                <source src="{{ audio.audio_file.url }}" type="audio/mpeg">
+                                            </audio>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Imagen de portada -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ form.cover_image.id_for_label }}">
+                                        <span class="label-text font-semibold">{{ form.cover_image.label }}</span>
+                                        <span class="label-text-alt">Opcional</span>
+                                    </label>
+                                    {{ form.cover_image }}
+                                    <label class="label">
+                                        <span class="label-text-alt">
+                                            JPG, PNG, WebP (máx. 5MB, recomendado: 800x800px)
+                                        </span>
+                                    </label>
+                                    {% if form.cover_image.errors %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ form.cover_image.errors.0 }}</span>
+                                        </label>
+                                    {% endif %}
+                                    
+                                    <!-- Preview de la imagen actual -->
+                                    {% if audio and audio.cover_image %}
+                                        <div class="mt-2">
+                                            <p class="text-sm text-base-content/70 mb-2">Imagen actual:</p>
+                                            <img src="{{ audio.cover_image.url }}" 
+                                                 alt="Portada actual"
+                                                 class="w-32 h-32 object-cover rounded-lg">
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Precios y licencias -->
+                    <div class="card bg-base-50">
+                        <div class="card-body">
+                            <h3 class="card-title text-lg mb-4">
+                                <i class="fas fa-dollar-sign mr-2"></i>
+                                Precios y Licencias
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- Licencia estándar -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ form.price_standard.id_for_label }}">
+                                        <span class="label-text font-semibold">{{ form.price_standard.label }}</span>
+                                        <span class="label-text-alt text-error">*</span>
+                                    </label>
+                                    {{ form.price_standard }}
+                                    <label class="label">
+                                        <span class="label-text-alt">Uso personal y comercial básico</span>
+                                    </label>
+                                    {% if form.price_standard.errors %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ form.price_standard.errors.0 }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Licencia extendida -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ form.price_extended.id_for_label }}">
+                                        <span class="label-text font-semibold">{{ form.price_extended.label }}</span>
+                                        <span class="label-text-alt">Opcional</span>
+                                    </label>
+                                    {{ form.price_extended }}
+                                    <label class="label">
+                                        <span class="label-text-alt">Uso comercial amplio</span>
+                                    </label>
+                                    {% if form.price_extended.errors %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ form.price_extended.errors.0 }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Licencia exclusiva -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ form.price_exclusive.id_for_label }}">
+                                        <span class="label-text font-semibold">{{ form.price_exclusive.label }}</span>
+                                        <span class="label-text-alt">Opcional</span>
+                                    </label>
+                                    {{ form.price_exclusive }}
+                                    <label class="label">
+                                        <span class="label-text-alt">Derechos exclusivos</span>
+                                    </label>
+                                    {% if form.price_exclusive.errors %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ form.price_exclusive.errors.0 }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-4">
+                                <svg class="stroke-current shrink-0 w-6 h-6" fill="none" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="text-sm">
+                                    <strong>Recomendación de precios:</strong>
+                                    <ul class="mt-2 ml-4 list-disc">
+                                        <li>Licencia Extendida: 3-5x el precio estándar</li>
+                                        <li>Licencia Exclusiva: 10-20x el precio estándar</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Configuración -->
+                    <div class="card bg-base-50">
+                        <div class="card-body">
+                            <h3 class="card-title text-lg mb-4">
+                                <i class="fas fa-cog mr-2"></i>
+                                Configuración
+                            </h3>
+                            
+                            <div class="form-control">
+                                <label class="cursor-pointer label justify-start">
+                                    {{ form.allow_preview }}
+                                    <span class="label-text ml-3">
+                                        <span class="font-semibold">{{ form.allow_preview.label }}</span>
+                                        <br>
+                                        <span class="text-sm text-base-content/70">
+                                            Permite que los usuarios escuchen una vista previa de tu audio antes de comprar
+                                        </span>
+                                    </span>
+                                </label>
+                                {% if form.allow_preview.errors %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ form.allow_preview.errors.0 }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Estado del audio (solo para nuevos audios) -->
+                    {% if not audio %}
+                    <div class="card bg-base-50">
+                        <div class="card-body">
+                            <h3 class="card-title text-lg mb-4">
+                                <i class="fas fa-flag mr-2"></i>
+                                {{ form.initial_status.label }}
+                            </h3>
+                            
+                            <div class="space-y-3">
+                                {% for choice in form.initial_status %}
+                                    <div class="form-control">
+                                        <label class="cursor-pointer label justify-start">
+                                            {{ choice.tag }}
+                                            <div class="ml-3">
+                                                <div class="font-semibold">{{ choice.choice_label }}</div>
+                                                {% if choice.data.value == 'draft' %}
+                                                    <div class="text-sm text-base-content/70">
+                                                        Solo tú podrás ver este audio. Podrás publicarlo más tarde.
+                                                    </div>
+                                                {% elif choice.data.value == 'pending' %}
+                                                    <div class="text-sm text-base-content/70">
+                                                        El audio será revisado por moderadores antes de ser publicado.
+                                                    </div>
+                                                {% elif choice.data.value == 'published' %}
+                                                    <div class="text-sm text-base-content/70">
+                                                        El audio será visible inmediatamente para todos los usuarios.
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            
+                            {% if form.initial_status.help_text %}
+                                <div class="alert alert-info mt-4">
+                                    <svg class="stroke-current shrink-0 w-6 h-6" fill="none" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span class="text-sm">{{ form.initial_status.help_text }}</span>
+                                </div>
+                            {% endif %}
+                            
+                            {% if form.initial_status.errors %}
+                                <div class="alert alert-error mt-4">
+                                    {% for error in form.initial_status.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Botones de acción -->
+                    <div class="flex flex-col sm:flex-row gap-4 justify-between">
+                        <div class="flex gap-2">
+                            <a href="{% if audio %}{% url 'audios:detail' audio.slug %}{% else %}{% url 'audios:my_audios' %}{% endif %}" 
+                               class="btn btn-outline">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Cancelar
+                            </a>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-{% if audio %}sync{% else %}upload{% endif %} mr-2"></i>
+                                {% if audio %}
+                                    Actualizar Audio
+                                {% else %}
+                                    Subir Audio
+                                {% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Tips y guías -->
+        <div class="card bg-gradient-to-r from-blue-50 to-indigo-50 mt-8">
+            <div class="card-body">
+                <h3 class="card-title text-lg mb-4">
+                    <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                    Tips para Maximizar tus Ventas
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                    <div>
+                        <h4 class="font-semibold mb-2">📝 Título y Descripción</h4>
+                        <ul class="list-disc list-inside space-y-1 text-base-content/70">
+                            <li>Usa títulos descriptivos y únicos</li>
+                            <li>Menciona el género, tempo y estado de ánimo</li>
+                            <li>Describe el uso recomendado (videos, podcasts, etc.)</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">🎵 Calidad del Audio</h4>
+                        <ul class="list-disc list-inside space-y-1 text-base-content/70">
+                            <li>Usa una calidad mínima de 320kbps MP3</li>
+                            <li>Asegúrate de que no haya distorsión</li>
+                            <li>Normaliza el volumen adecuadamente</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">🖼️ Imagen de Portada</h4>
+                        <ul class="list-disc list-inside space-y-1 text-base-content/70">
+                            <li>Usa imágenes de alta resolución (mín. 800x800px)</li>
+                            <li>Que refleje el estado de ánimo del audio</li>
+                            <li>Evita texto en la imagen</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">💰 Estrategia de Precios</h4>
+                        <ul class="list-disc list-inside space-y-1 text-base-content/70">
+                            <li>Investiga precios de audios similares</li>
+                            <li>Considera la duración y complejidad</li>
+                            <li>Ofrece múltiples opciones de licencia</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-actualizar género según categoría seleccionada
+    const categorySelect = document.getElementById('{{ form.category.id_for_label }}');
+    const genreSelect = document.getElementById('{{ form.genre.id_for_label }}');
+    
+    if (categorySelect && genreSelect) {
+        categorySelect.addEventListener('change', function() {
+            const categoryId = this.value;
+            if (categoryId) {
+                // Aquí podrías hacer una llamada AJAX para filtrar géneros
+                // Por ahora, mantenemos todos los géneros disponibles
+            }
+        });
+    }
+    
+    // Validación de archivos en el cliente
+    const audioFileInput = document.getElementById('{{ form.audio_file.id_for_label }}');
+    const coverImageInput = document.getElementById('{{ form.cover_image.id_for_label }}');
+    
+    if (audioFileInput) {
+        audioFileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                // Validar tamaño (50MB)
+                if (file.size > 50 * 1024 * 1024) {
+                    alert('El archivo de audio no puede superar los 50MB.');
+                    this.value = '';
+                }
+            }
+        });
+    }
+    
+    if (coverImageInput) {
+        coverImageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                // Validar tamaño (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('La imagen no puede superar los 5MB.');
+                    this.value = '';
+                    return;
+                }
+                
+                // Preview de la imagen
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Remover preview anterior si existe
+                    const existingPreview = document.querySelector('.image-preview');
+                    if (existingPreview) {
+                        existingPreview.remove();
+                    }
+                    
+                    // Crear nuevo preview
+                    const preview = document.createElement('div');
+                    preview.className = 'image-preview mt-2';
+                    preview.innerHTML = `
+                        <p class="text-sm text-base-content/70 mb-2">Vista previa:</p>
+                        <img src="${e.target.result}" class="w-32 h-32 object-cover rounded-lg" alt="Vista previa">
+                    `;
+                    coverImageInput.parentNode.appendChild(preview);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

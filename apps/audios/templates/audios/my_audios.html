@@ -1,0 +1,463 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis Audios - AudioMarket{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold">Mis Audios</h1>
+            <p class="text-base-content/70 mt-1">Gestiona tu biblioteca de audios</p>
+        </div>
+        <a href="{% url 'audios:upload' %}" class="btn btn-primary">
+            <i class="fas fa-plus mr-2"></i>
+            Subir Nuevo Audio
+        </a>
+    </div>
+    
+    <!-- Estadísticas -->
+    <div class="stats stats-horizontal shadow mb-8 w-full">
+        <div class="stat">
+            <div class="stat-figure text-primary">
+                <i class="fas fa-music text-3xl"></i>
+            </div>
+            <div class="stat-title">Total Audios</div>
+            <div class="stat-value text-primary">{{ stats.total }}</div>
+        </div>
+        
+        <div class="stat">
+            <div class="stat-figure text-secondary">
+                <i class="fas fa-check-circle text-3xl"></i>
+            </div>
+            <div class="stat-title">Publicados</div>
+            <div class="stat-value text-secondary">{{ stats.published }}</div>
+        </div>
+        
+        <div class="stat">
+            <div class="stat-figure text-warning">
+                <i class="fas fa-clock text-3xl"></i>
+            </div>
+            <div class="stat-title">Pendientes</div>
+            <div class="stat-value text-warning">{{ stats.pending }}</div>
+        </div>
+        
+        <div class="stat">
+            <div class="stat-figure text-info">
+                <i class="fas fa-eye text-3xl"></i>
+            </div>
+            <div class="stat-title">Total Visualizaciones</div>
+            <div class="stat-value text-info">{{ stats.total_views }}</div>
+        </div>
+        
+        <div class="stat">
+            <div class="stat-figure text-success">
+                <i class="fas fa-download text-3xl"></i>
+            </div>
+            <div class="stat-title">Total Descargas</div>
+            <div class="stat-value text-success">{{ stats.total_downloads }}</div>
+        </div>
+    </div>
+    
+    <!-- Filtros y acciones -->
+    <div class="card bg-base-100 shadow-lg mb-6">
+        <div class="card-body">
+            <div class="flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex flex-wrap gap-2">
+                    <div class="btn-group">
+                        <button class="btn btn-sm {% if not request.GET.status %}btn-active{% endif %}">
+                            <a href="?">Todos</a>
+                        </button>
+                        <button class="btn btn-sm {% if request.GET.status == 'published' %}btn-active{% endif %}">
+                            <a href="?status=published">Publicados</a>
+                        </button>
+                        <button class="btn btn-sm {% if request.GET.status == 'pending' %}btn-active{% endif %}">
+                            <a href="?status=pending">Pendientes</a>
+                        </button>
+                        <button class="btn btn-sm {% if request.GET.status == 'draft' %}btn-active{% endif %}">
+                            <a href="?status=draft">Borradores</a>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <div class="dropdown dropdown-end">
+                        <label tabindex="0" class="btn btn-outline btn-sm">
+                            <i class="fas fa-sort mr-2"></i>
+                            Ordenar
+                        </label>
+                        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                            <li><a href="?sort=newest">Más recientes</a></li>
+                            <li><a href="?sort=oldest">Más antiguos</a></li>
+                            <li><a href="?sort=title">Título A-Z</a></li>
+                            <li><a href="?sort=views">Más vistos</a></li>
+                            <li><a href="?sort=downloads">Más descargados</a></li>
+                        </ul>
+                    </div>
+                    
+                    <button class="btn btn-outline btn-sm" onclick="bulk_actions_modal.showModal()">
+                        <i class="fas fa-tasks mr-2"></i>
+                        Acciones Masivas
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Lista de audios -->
+    {% if audios %}
+        <div class="space-y-4">
+            {% for audio in audios %}
+                <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="card-body">
+                        <div class="flex flex-col lg:flex-row gap-4">
+                            
+                            <!-- Checkbox para selección masiva -->
+                            <div class="flex-shrink-0 flex items-center">
+                                <input type="checkbox" class="checkbox checkbox-primary audio-checkbox" 
+                                       value="{{ audio.id }}" data-audio-id="{{ audio.id }}">
+                            </div>
+                            
+                            <!-- Imagen de portada -->
+                            <div class="flex-shrink-0">
+                                {% if audio.cover_image %}
+                                    <img src="{{ audio.cover_image.url }}" 
+                                         alt="{{ audio.title }}"
+                                         class="w-20 h-20 lg:w-24 lg:h-24 object-cover rounded-lg">
+                                {% else %}
+                                    <div class="w-20 h-20 lg:w-24 lg:h-24 bg-base-200 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-music text-2xl text-base-content/30"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Información principal -->
+                            <div class="flex-1">
+                                <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between">
+                                    <div class="flex-1">
+                                        <h3 class="text-xl font-bold mb-2">
+                                            {% if audio.is_published %}
+                                                <a href="{% url 'audios:detail' audio.slug %}" 
+                                                   class="link link-hover">
+                                                    {{ audio.title }}
+                                                </a>
+                                            {% else %}
+                                                {{ audio.title }}
+                                            {% endif %}
+                                        </h3>
+                                        
+                                        <!-- Estado y badges -->
+                                        <div class="flex flex-wrap gap-2 mb-3">
+                                            {% if audio.status == 'published' %}
+                                                <span class="badge badge-success">
+                                                    <i class="fas fa-check mr-1"></i>Publicado
+                                                </span>
+                                            {% elif audio.status == 'pending' %}
+                                                <span class="badge badge-warning">
+                                                    <i class="fas fa-clock mr-1"></i>Pendiente
+                                                </span>
+                                            {% elif audio.status == 'draft' %}
+                                                <span class="badge badge-outline">
+                                                    <i class="fas fa-edit mr-1"></i>Borrador
+                                                </span>
+                                            {% elif audio.status == 'rejected' %}
+                                                <span class="badge badge-error">
+                                                    <i class="fas fa-times mr-1"></i>Rechazado
+                                                </span>
+                                            {% endif %}
+                                            
+                                            {% if audio.is_featured %}
+                                                <span class="badge badge-warning">
+                                                    <i class="fas fa-star mr-1"></i>Destacado
+                                                </span>
+                                            {% endif %}
+                                            
+                                            <span class="badge badge-outline">{{ audio.category.name }}</span>
+                                            <span class="badge badge-ghost">{{ audio.genre.name }}</span>
+                                        </div>
+                                        
+                                        <!-- Descripción corta -->
+                                        <p class="text-base-content/70 text-sm mb-3">
+                                            {{ audio.description|truncatechars:120 }}
+                                        </p>
+                                        
+                                        <!-- Estadísticas -->
+                                        <div class="flex flex-wrap gap-4 text-xs text-base-content/60">
+                                            <span>
+                                                <i class="fas fa-eye mr-1"></i>
+                                                {{ audio.views_count }} visualizaciones
+                                            </span>
+                                            <span>
+                                                <i class="fas fa-download mr-1"></i>
+                                                {{ audio.downloads_count }} descargas
+                                            </span>
+                                            <span>
+                                                <i class="fas fa-heart mr-1"></i>
+                                                {{ audio.favorites_count }} favoritos
+                                            </span>
+                                            <span>
+                                                <i class="fas fa-calendar mr-1"></i>
+                                                {{ audio.created_at|timesince }} atrás
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Precio y acciones -->
+                                    <div class="flex flex-col items-end gap-3 mt-4 lg:mt-0 lg:ml-4">
+                                        <div class="text-right">
+                                            <div class="text-2xl font-bold text-primary">${{ audio.price_standard }}</div>
+                                            <div class="text-xs text-base-content/60">Licencia Estándar</div>
+                                        </div>
+                                        
+                                        <!-- Botones de acción -->
+                                        <div class="flex flex-wrap gap-2">
+                                            {% if audio.is_published %}
+                                                <a href="{% url 'audios:detail' audio.slug %}" 
+                                                   class="btn btn-outline btn-sm">
+                                                    <i class="fas fa-eye mr-1"></i>Ver
+                                                </a>
+                                            {% endif %}
+                                            
+                                            <a href="{% url 'audios:edit' audio.slug %}" 
+                                               class="btn btn-primary btn-sm">
+                                                <i class="fas fa-edit mr-1"></i>Editar
+                                            </a>
+                                            
+                                            <!-- Botones de estado según el estado actual -->
+                                            {% if audio.status == 'draft' %}
+                                                <form method="post" action="{% url 'audios:change_status' audio.slug %}" class="inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="status" value="published">
+                                                    <button type="submit" class="btn btn-success btn-sm" 
+                                                            onclick="return confirm('¿Publicar este audio ahora?')">
+                                                        <i class="fas fa-check mr-1"></i>Publicar
+                                                    </button>
+                                                </form>
+                                                <form method="post" action="{% url 'audios:change_status' audio.slug %}" class="inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="status" value="pending">
+                                                    <button type="submit" class="btn btn-warning btn-sm">
+                                                        <i class="fas fa-paper-plane mr-1"></i>Revisar
+                                                    </button>
+                                                </form>
+                                            {% elif audio.status == 'published' %}
+                                                <form method="post" action="{% url 'audios:change_status' audio.slug %}" class="inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="status" value="inactive">
+                                                    <button type="submit" class="btn btn-outline btn-sm" 
+                                                            onclick="return confirm('¿Despublicar este audio?')">
+                                                        <i class="fas fa-eye-slash mr-1"></i>Ocultar
+                                                    </button>
+                                                </form>
+                                            {% elif audio.status == 'pending' %}
+                                                <form method="post" action="{% url 'audios:change_status' audio.slug %}" class="inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="status" value="draft">
+                                                    <button type="submit" class="btn btn-outline btn-sm">
+                                                        <i class="fas fa-arrow-left mr-1"></i>Borrador
+                                                    </button>
+                                                </form>
+                                            {% elif audio.status == 'inactive' %}
+                                                <form method="post" action="{% url 'audios:change_status' audio.slug %}" class="inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="status" value="published">
+                                                    <button type="submit" class="btn btn-success btn-sm">
+                                                        <i class="fas fa-check mr-1"></i>Republicar
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                            
+                                            <div class="dropdown dropdown-end">
+                                                <label tabindex="0" class="btn btn-ghost btn-sm">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </label>
+                                                <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                                                    <li><a href="#"><i class="fas fa-copy"></i>Duplicar</a></li>
+                                                    <li><a href="#"><i class="fas fa-chart-line"></i>Ver estadísticas</a></li>
+                                                    <li><hr class="my-2"></li>
+                                                    <li>
+                                                        <a href="{% url 'audios:delete' audio.slug %}" 
+                                                           class="text-error"
+                                                           onclick="return confirm('¿Estás seguro de que quieres eliminar este audio?')">
+                                                            <i class="fas fa-trash"></i>Eliminar
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Vista previa del audio -->
+                        {% if audio.allow_preview and audio.audio_file %}
+                            <div class="mt-4 pt-4 border-t border-base-300">
+                                <audio controls class="w-full">
+                                    <source src="{{ audio.audio_file.url }}" type="audio/mpeg">
+                                </audio>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paginación -->
+        {% if audios.has_other_pages %}
+            <div class="flex justify-center mt-8">
+                <div class="btn-group">
+                    {% if audios.has_previous %}
+                        <a href="?page={{ audios.previous_page_number }}" class="btn btn-outline">«</a>
+                    {% endif %}
+                    
+                    {% for num in audios.paginator.page_range %}
+                        {% if audios.number == num %}
+                            <button class="btn btn-active">{{ num }}</button>
+                        {% elif num > audios.number|add:'-3' and num < audios.number|add:'3' %}
+                            <a href="?page={{ num }}" class="btn btn-outline">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if audios.has_next %}
+                        <a href="?page={{ audios.next_page_number }}" class="btn btn-outline">»</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        
+    {% else %}
+        <!-- Estado vacío -->
+        <div class="text-center py-16">
+            <div class="text-6xl text-base-content/30 mb-6">
+                <i class="fas fa-music"></i>
+            </div>
+            <h3 class="text-2xl font-semibold mb-4">Aún no tienes audios</h3>
+            <p class="text-base-content/70 mb-6 max-w-md mx-auto">
+                ¡Comparte tu talento con el mundo! Sube tu primer audio y comienza tu 
+                carrera como vendedor en AudioMarket.
+            </p>
+            <a href="{% url 'audios:upload' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus mr-2"></i>
+                Subir Mi Primer Audio
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal para acciones masivas -->
+<dialog id="bulk_actions_modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Acciones Masivas</h3>
+        <p class="py-4">Selecciona los audios que quieres modificar usando los checkboxes y elige una acción:</p>
+        
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Acción a realizar:</span>
+            </label>
+            <select id="bulk-action-select" class="select select-bordered">
+                <option value="">Seleccionar acción...</option>
+                <option value="publish">Publicar seleccionados</option>
+                <option value="unpublish">Despublicar seleccionados</option>
+                <option value="delete">Eliminar seleccionados</option>
+                <option value="feature">Marcar como destacados</option>
+                <option value="unfeature">Quitar destacado</option>
+            </select>
+        </div>
+        
+        <div id="selected-count" class="text-sm text-base-content/70 mt-4">
+            Ningún audio seleccionado
+        </div>
+        
+        <div class="modal-action">
+            <button class="btn btn-outline" onclick="bulk_actions_modal.close()">Cancelar</button>
+            <button id="execute-bulk-action" class="btn btn-primary" disabled>Ejecutar Acción</button>
+        </div>
+    </div>
+</dialog>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.audio-checkbox');
+    const selectedCountEl = document.getElementById('selected-count');
+    const executeBtn = document.getElementById('execute-bulk-action');
+    const actionSelect = document.getElementById('bulk-action-select');
+    
+    function updateSelectedCount() {
+        const selected = document.querySelectorAll('.audio-checkbox:checked');
+        const count = selected.length;
+        
+        if (count === 0) {
+            selectedCountEl.textContent = 'Ningún audio seleccionado';
+            executeBtn.disabled = true;
+        } else {
+            selectedCountEl.textContent = `${count} audio${count !== 1 ? 's' : ''} seleccionado${count !== 1 ? 's' : ''}`;
+            executeBtn.disabled = !actionSelect.value;
+        }
+    }
+    
+    // Escuchar cambios en checkboxes
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+    
+    // Escuchar cambios en el select de acciones
+    actionSelect.addEventListener('change', function() {
+        executeBtn.disabled = !this.value || document.querySelectorAll('.audio-checkbox:checked').length === 0;
+    });
+    
+    // Ejecutar acción masiva
+    executeBtn.addEventListener('click', function() {
+        const selected = Array.from(document.querySelectorAll('.audio-checkbox:checked'))
+                             .map(cb => cb.value);
+        const action = actionSelect.value;
+        
+        if (selected.length === 0 || !action) {
+            alert('Por favor selecciona al menos un audio y una acción.');
+            return;
+        }
+        
+        if (action === 'delete') {
+            if (!confirm(`¿Estás seguro de que quieres eliminar ${selected.length} audio(s)? Esta acción no se puede deshacer.`)) {
+                return;
+            }
+        }
+        
+        // Aquí harías la petición AJAX para ejecutar la acción masiva
+        console.log('Ejecutar acción:', action, 'en audios:', selected);
+        
+        // Por ahora, solo cerramos el modal
+        bulk_actions_modal.close();
+        
+        // En una implementación real, harías:
+        // fetch('/audios/bulk-action/', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         'X-CSRFToken': getCsrfToken()
+        //     },
+        //     body: JSON.stringify({
+        //         action: action,
+        //         audio_ids: selected
+        //     })
+        // })
+        // .then(response => response.json())
+        // .then(data => {
+        //     if (data.success) {
+        //         location.reload();
+        //     }
+        // });
+    });
+    
+    // Ctrl+A para seleccionar todos
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'a' && document.activeElement.tagName !== 'INPUT') {
+            e.preventDefault();
+            checkboxes.forEach(cb => cb.checked = true);
+            updateSelectedCount();
+        }
+    });
+});
+</script>
+{% endblock %}

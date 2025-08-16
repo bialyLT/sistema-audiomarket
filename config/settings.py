@@ -1,6 +1,12 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+
+# Try to import dotenv, but don't fail if it's not available
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -34,6 +40,7 @@ INSTALLED_APPS = [
     # Local apps
     'core',
     'apps.users',
+    'apps.audios',
 ]
 
 MIDDLEWARE = [

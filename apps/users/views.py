@@ -162,9 +162,35 @@ def dashboard_seller(request):
         messages.warning(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('core:home')
     
+    # Importar el modelo Audio
+    from apps.audios.models import Audio
+    
+    # Obtener audios del vendedor
+    user_audios = Audio.objects.filter(seller=request.user).order_by('-created_at')
+    
+    # Estadísticas del vendedor
+    stats = {
+        'total_audios': user_audios.count(),
+        'published_audios': user_audios.filter(status=Audio.Status.PUBLISHED).count(),
+        'pending_audios': user_audios.filter(status=Audio.Status.PENDING).count(),
+        'draft_audios': user_audios.filter(status=Audio.Status.DRAFT).count(),
+        'total_views': sum(audio.views_count for audio in user_audios),
+        'total_downloads': sum(audio.downloads_count for audio in user_audios),
+        'total_favorites': sum(audio.favorites_count for audio in user_audios),
+    }
+    
+    # Calcular ganancias (por ahora 0, se implementará con el sistema de pagos)
+    stats['total_sales'] = 0
+    stats['monthly_sales'] = 0
+    
+    # Audios recientes (últimos 5)
+    recent_audios = user_audios[:5]
+    
     context = {
         'user': request.user,
-        'user_type': 'seller'
+        'user_type': 'seller',
+        'stats': stats,
+        'recent_audios': recent_audios,
     }
     return render(request, 'users/dashboard_seller.html', context)
 

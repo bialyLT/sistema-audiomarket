@@ -1,0 +1,490 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ audio.title }} - AudioMarket{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Breadcrumb -->
+    <div class="text-sm breadcrumbs mb-6">
+        <ul>
+            <li><a href="{% url 'core:home' %}">Inicio</a></li>
+            <li><a href="{% url 'audios:list' %}">Audios</a></li>
+            <li><a href="{% url 'audios:category' audio.category.slug %}">{{ audio.category.name }}</a></li>
+            <li>{{ audio.title }}</li>
+        </ul>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Contenido principal -->
+        <div class="lg:col-span-2">
+            <!-- Header del audio -->
+            <div class="card bg-base-100 shadow-lg mb-6">
+                <div class="card-body">
+                    <div class="flex flex-col lg:flex-row gap-6">
+                        <!-- Imagen de portada -->
+                        <div class="flex-shrink-0">
+                            {% if audio.cover_image %}
+                                <img src="{{ audio.cover_image.url }}" 
+                                     alt="{{ audio.title }}"
+                                     class="w-full lg:w-64 h-64 object-cover rounded-lg shadow-md">
+                            {% else %}
+                                <div class="w-full lg:w-64 h-64 bg-base-200 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-music text-6xl text-base-content/30"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Reproductor de audio -->
+                            {% if audio.allow_preview and audio.audio_file %}
+                                <div class="mt-4">
+                                    <audio controls class="w-full">
+                                        <source src="{{ audio.audio_file.url }}" type="audio/mpeg">
+                                        Tu navegador no soporta el elemento de audio.
+                                    </audio>
+                                    <p class="text-xs text-base-content/60 mt-1">Vista previa disponible</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Información del audio -->
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h1 class="text-3xl font-bold mb-2">{{ audio.title }}</h1>
+                                    {% if audio.is_featured %}
+                                        <div class="badge badge-warning mb-2">
+                                            <i class="fas fa-star mr-1"></i>
+                                            Destacado
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if user.is_authenticated %}
+                                    <div class="dropdown dropdown-end">
+                                        <label tabindex="0" class="btn btn-ghost btn-sm">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </label>
+                                        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                                            <li>
+                                                <button class="favorite-btn" data-audio-slug="{{ audio.slug }}">
+                                                    <i class="fas fa-heart {% if is_favorite %}text-red-500{% endif %}"></i>
+                                                    {% if is_favorite %}Quitar de favoritos{% else %}Agregar a favoritos{% endif %}
+                                                </button>
+                                            </li>
+                                            {% if user == audio.seller %}
+                                                <li><a href="{% url 'audios:edit' audio.slug %}"><i class="fas fa-edit"></i>Editar</a></li>
+                                                <li><a href="{% url 'audios:delete' audio.slug %}" class="text-error"><i class="fas fa-trash"></i>Eliminar</a></li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Vendedor -->
+                            <div class="mb-4">
+                                <div class="flex items-center gap-3">
+                                    {% if audio.seller.profile.avatar %}
+                                        <img src="{{ audio.seller.profile.avatar.url }}" 
+                                             alt="{{ audio.seller.get_full_name }}"
+                                             class="w-12 h-12 rounded-full object-cover">
+                                    {% else %}
+                                        <div class="w-12 h-12 rounded-full bg-primary text-primary-content flex items-center justify-center">
+                                            {{ audio.seller.first_name.0 }}{{ audio.seller.last_name.0 }}
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <h3 class="font-semibold">
+                                            <a href="{% url 'audios:seller_profile' audio.seller.username %}" 
+                                               class="link link-hover">
+                                                {{ audio.seller.get_full_name }}
+                                            </a>
+                                        </h3>
+                                        <p class="text-sm text-base-content/70">Vendedor</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Categoría y género -->
+                            <div class="flex gap-2 mb-4">
+                                <span class="badge badge-outline">
+                                    <i class="{{ audio.category.icon }} mr-1"></i>
+                                    {{ audio.category.name }}
+                                </span>
+                                <span class="badge badge-ghost">{{ audio.genre.name }}</span>
+                            </div>
+                            
+                            <!-- Tags -->
+                            {% if audio.tags.exists %}
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    {% for tag in audio.tags.all %}
+                                        <span class="badge badge-sm" style="background-color: {{ tag.color }}20; color: {{ tag.color }};">
+                                            {{ tag.name }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Estadísticas -->
+                            <div class="stats stats-horizontal shadow mb-4">
+                                <div class="stat">
+                                    <div class="stat-title text-xs">Visualizaciones</div>
+                                    <div class="stat-value text-sm">{{ audio.views_count }}</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-title text-xs">Descargas</div>
+                                    <div class="stat-value text-sm">{{ audio.downloads_count }}</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-title text-xs">Favoritos</div>
+                                    <div class="stat-value text-sm">{{ audio.favorites_count }}</div>
+                                </div>
+                                {% if review_stats.total_reviews %}
+                                    <div class="stat">
+                                        <div class="stat-title text-xs">Rating</div>
+                                        <div class="stat-value text-sm flex items-center">
+                                            {{ review_stats.avg_rating|floatformat:1 }}
+                                            <i class="fas fa-star text-yellow-500 text-xs ml-1"></i>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Información técnica -->
+                            {% if audio.duration or audio.file_size_mb %}
+                                <div class="collapse collapse-arrow bg-base-200 mb-4">
+                                    <input type="checkbox">
+                                    <div class="collapse-title text-sm font-medium">
+                                        Información técnica
+                                    </div>
+                                    <div class="collapse-content">
+                                        <div class="grid grid-cols-2 gap-4 text-sm">
+                                            {% if audio.duration %}
+                                                <div>
+                                                    <span class="font-semibold">Duración:</span>
+                                                    <span>{{ audio.duration|date:"i:s" }}</span>
+                                                </div>
+                                            {% endif %}
+                                            {% if audio.file_size_mb %}
+                                                <div>
+                                                    <span class="font-semibold">Tamaño:</span>
+                                                    <span>{{ audio.file_size_mb }} MB</span>
+                                                </div>
+                                            {% endif %}
+                                            {% if audio.bitrate %}
+                                                <div>
+                                                    <span class="font-semibold">Bitrate:</span>
+                                                    <span>{{ audio.bitrate }} kbps</span>
+                                                </div>
+                                            {% endif %}
+                                            {% if audio.sample_rate %}
+                                                <div>
+                                                    <span class="font-semibold">Sample Rate:</span>
+                                                    <span>{{ audio.sample_rate }} Hz</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Descripción -->
+            <div class="card bg-base-100 shadow-lg mb-6">
+                <div class="card-body">
+                    <h2 class="card-title">Descripción</h2>
+                    <div class="prose max-w-none">
+                        {{ audio.description|linebreaks }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reseñas -->
+            <div class="card bg-base-100 shadow-lg mb-6">
+                <div class="card-body">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="card-title">
+                            Reseñas 
+                            {% if review_stats.total_reviews %}
+                                ({{ review_stats.total_reviews }})
+                            {% endif %}
+                        </h2>
+                        {% if can_review %}
+                            <a href="{% url 'audios:add_review' audio.slug %}" class="btn btn-outline btn-sm">
+                                <i class="fas fa-star mr-1"></i>
+                                Escribir reseña
+                            </a>
+                        {% endif %}
+                    </div>
+                    
+                    {% if reviews %}
+                        <div class="space-y-4">
+                            {% for review in reviews %}
+                                <div class="flex gap-4 p-4 bg-base-50 rounded-lg">
+                                    {% if review.user.profile.avatar %}
+                                        <img src="{{ review.user.profile.avatar.url }}" 
+                                             alt="{{ review.user.get_full_name }}"
+                                             class="w-10 h-10 rounded-full object-cover">
+                                    {% else %}
+                                        <div class="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center text-sm">
+                                            {{ review.user.first_name.0 }}{{ review.user.last_name.0 }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="font-semibold">{{ review.user.get_full_name }}</span>
+                                            <div class="rating rating-xs">
+                                                {% for i in "12345" %}
+                                                    <input type="radio" class="mask mask-star-2 bg-orange-400" 
+                                                           {% if review.rating >= i|add:0 %}checked{% endif %} disabled>
+                                                {% endfor %}
+                                            </div>
+                                            <span class="text-xs text-base-content/60">{{ review.created_at|timesince }} atrás</span>
+                                        </div>
+                                        {% if review.comment %}
+                                            <p class="text-sm">{{ review.comment }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-8 text-base-content/60">
+                            <i class="fas fa-star text-4xl mb-4"></i>
+                            <p>Aún no hay reseñas para este audio.</p>
+                            {% if can_review %}
+                                <p class="mt-2">¡Sé el primero en escribir una!</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar de precios y acciones -->
+        <div class="lg:col-span-1">
+            <div class="card bg-base-100 shadow-lg sticky top-4">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Licencias y Precios</h3>
+                    
+                    <!-- Licencia Estándar -->
+                    <div class="card card-compact bg-base-50 mb-4">
+                        <div class="card-body">
+                            <h4 class="font-semibold">Licencia Estándar</h4>
+                            <p class="text-2xl font-bold text-primary">${{ audio.price_standard }}</p>
+                            <p class="text-sm text-base-content/70 mb-3">
+                                Uso personal y comercial básico
+                            </p>
+                            <button class="btn btn-primary btn-block">
+                                <i class="fas fa-shopping-cart mr-2"></i>
+                                Comprar Ahora
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Licencia Extendida -->
+                    {% if audio.price_extended %}
+                        <div class="card card-compact bg-base-50 mb-4">
+                            <div class="card-body">
+                                <h4 class="font-semibold">Licencia Extendida</h4>
+                                <p class="text-2xl font-bold text-secondary">${{ audio.price_extended }}</p>
+                                <p class="text-sm text-base-content/70 mb-3">
+                                    Uso comercial amplio y distribución
+                                </p>
+                                <button class="btn btn-secondary btn-block">
+                                    <i class="fas fa-shopping-cart mr-2"></i>
+                                    Comprar Ahora
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Licencia Exclusiva -->
+                    {% if audio.price_exclusive %}
+                        <div class="card card-compact bg-gradient-to-r from-yellow-100 to-yellow-200 mb-4">
+                            <div class="card-body">
+                                <h4 class="font-semibold flex items-center">
+                                    <i class="fas fa-crown text-yellow-600 mr-2"></i>
+                                    Licencia Exclusiva
+                                </h4>
+                                <p class="text-2xl font-bold text-yellow-600">${{ audio.price_exclusive }}</p>
+                                <p class="text-sm text-gray-600 mb-3">
+                                    Derechos exclusivos y eliminación del marketplace
+                                </p>
+                                <button class="btn btn-warning btn-block">
+                                    <i class="fas fa-crown mr-2"></i>
+                                    Comprar Exclusivo
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="divider"></div>
+                    
+                    <!-- Acciones adicionales -->
+                    {% if user.is_authenticated %}
+                        <div class="space-y-2">
+                            <button class="btn btn-outline btn-block favorite-btn" data-audio-slug="{{ audio.slug }}">
+                                <i class="fas fa-heart {% if is_favorite %}text-red-500{% endif %} mr-2"></i>
+                                {% if is_favorite %}Quitar de Favoritos{% else %}Agregar a Favoritos{% endif %}
+                            </button>
+                            <button class="btn btn-outline btn-block">
+                                <i class="fas fa-share mr-2"></i>
+                                Compartir
+                            </button>
+                        </div>
+                    {% else %}
+                        <div class="text-center">
+                            <p class="text-sm text-base-content/70 mb-3">
+                                <a href="{% url 'users:login' %}" class="link link-primary">Inicia sesión</a> 
+                                para comprar o agregar a favoritos
+                            </p>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Información del vendedor -->
+                    <div class="divider"></div>
+                    <div>
+                        <h4 class="font-semibold mb-3">Sobre el Vendedor</h4>
+                        <div class="flex items-center gap-3 mb-3">
+                            {% if audio.seller.profile.avatar %}
+                                <img src="{{ audio.seller.profile.avatar.url }}" 
+                                     alt="{{ audio.seller.get_full_name }}"
+                                     class="w-12 h-12 rounded-full object-cover">
+                            {% else %}
+                                <div class="w-12 h-12 rounded-full bg-primary text-primary-content flex items-center justify-center">
+                                    {{ audio.seller.first_name.0 }}{{ audio.seller.last_name.0 }}
+                                </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="font-semibold">{{ audio.seller.get_full_name }}</h5>
+                                {% if audio.seller.profile.artist_name %}
+                                    <p class="text-sm text-base-content/70">{{ audio.seller.profile.artist_name }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <a href="{% url 'audios:seller_profile' audio.seller.username %}" 
+                           class="btn btn-outline btn-sm btn-block">
+                            Ver Perfil del Vendedor
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Audios relacionados -->
+            {% if related_audios %}
+                <div class="card bg-base-100 shadow-lg mt-6">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">Audios Similares</h3>
+                        <div class="space-y-3">
+                            {% for related_audio in related_audios %}
+                                <div class="flex gap-3">
+                                    {% if related_audio.cover_image %}
+                                        <img src="{{ related_audio.cover_image.url }}" 
+                                             alt="{{ related_audio.title }}"
+                                             class="w-12 h-12 rounded object-cover">
+                                    {% else %}
+                                        <div class="w-12 h-12 bg-base-200 rounded flex items-center justify-center">
+                                            <i class="fas fa-music text-base-content/30"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-semibold">
+                                            <a href="{% url 'audios:detail' related_audio.slug %}" 
+                                               class="link link-hover">
+                                                {{ related_audio.title|truncatechars:30 }}
+                                            </a>
+                                        </h4>
+                                        <p class="text-xs text-base-content/70">{{ related_audio.seller.get_full_name }}</p>
+                                        <p class="text-sm font-semibold text-primary">${{ related_audio.price_standard }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Más del vendedor -->
+            {% if more_from_seller %}
+                <div class="card bg-base-100 shadow-lg mt-6">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">Más de {{ audio.seller.get_full_name }}</h3>
+                        <div class="space-y-3">
+                            {% for seller_audio in more_from_seller %}
+                                <div class="flex gap-3">
+                                    {% if seller_audio.cover_image %}
+                                        <img src="{{ seller_audio.cover_image.url }}" 
+                                             alt="{{ seller_audio.title }}"
+                                             class="w-12 h-12 rounded object-cover">
+                                    {% else %}
+                                        <div class="w-12 h-12 bg-base-200 rounded flex items-center justify-center">
+                                            <i class="fas fa-music text-base-content/30"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-semibold">
+                                            <a href="{% url 'audios:detail' seller_audio.slug %}" 
+                                               class="link link-hover">
+                                                {{ seller_audio.title|truncatechars:30 }}
+                                            </a>
+                                        </h4>
+                                        <p class="text-xs text-base-content/70">{{ seller_audio.category.name }}</p>
+                                        <p class="text-sm font-semibold text-primary">${{ seller_audio.price_standard }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <a href="{% url 'audios:seller_profile' audio.seller.username %}" 
+                           class="btn btn-outline btn-sm btn-block mt-4">
+                            Ver Todos
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Funcionalidad de favoritos
+    document.querySelectorAll('.favorite-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const audioSlug = this.dataset.audioSlug;
+            fetch(`/audios/${audioSlug}/favorito/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const icons = this.querySelectorAll('i.fa-heart');
+                    const texts = this.querySelectorAll('.btn-text, span:not(i)');
+                    
+                    icons.forEach(icon => {
+                        if (data.is_favorite) {
+                            icon.classList.add('text-red-500');
+                        } else {
+                            icon.classList.remove('text-red-500');
+                        }
+                    });
+                    
+                    // Actualizar texto del botón
+                    const textSpan = this.querySelector('span:not(.fas):not(.far)') || this.lastChild;
+                    if (textSpan && textSpan.nodeType === Node.TEXT_NODE) {
+                        textSpan.textContent = data.is_favorite ? 'Quitar de Favoritos' : 'Agregar a Favoritos';
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+});
+</script>
+{% endblock %}

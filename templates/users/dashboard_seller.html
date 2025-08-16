@@ -36,8 +36,8 @@
                 </svg>
             </div>
             <div class="stat-title">Audios Publicados</div>
-            <div class="stat-value text-secondary">0</div>
-            <div class="stat-desc">En tu catálogo</div>
+            <div class="stat-value text-secondary">{{ stats.published_audios }}</div>
+            <div class="stat-desc">Total: {{ stats.total_audios }}</div>
         </div>
 
         <div class="stat bg-base-100 shadow-lg rounded-lg">
@@ -47,31 +47,31 @@
                 </svg>
             </div>
             <div class="stat-title">Ventas Totales</div>
-            <div class="stat-value text-success">$0</div>
-            <div class="stat-desc">Este mes</div>
+            <div class="stat-value text-success">${{ stats.total_sales }}</div>
+            <div class="stat-desc">Este mes: ${{ stats.monthly_sales }}</div>
         </div>
 
         <div class="stat bg-base-100 shadow-lg rounded-lg">
             <div class="stat-figure text-primary">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.1 5.4M7 13L5.9 18.4M16 19a2 2 0 100-4 2 2 0 000 4zM9 19a2 2 0 100-4 2 2 0 000 4z"></path>
-                </svg>
-            </div>
-            <div class="stat-title">Órdenes</div>
-            <div class="stat-value text-primary">0</div>
-            <div class="stat-desc">Procesadas</div>
-        </div>
-
-        <div class="stat bg-base-100 shadow-lg rounded-lg">
-            <div class="stat-figure text-accent">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                 </svg>
             </div>
             <div class="stat-title">Visualizaciones</div>
-            <div class="stat-value text-accent">0</div>
-            <div class="stat-desc">Total de plays</div>
+            <div class="stat-value text-primary">{{ stats.total_views }}</div>
+            <div class="stat-desc">Total de reproducciones</div>
+        </div>
+
+        <div class="stat bg-base-100 shadow-lg rounded-lg">
+            <div class="stat-figure text-accent">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+            </div>
+            <div class="stat-title">Favoritos</div>
+            <div class="stat-value text-accent">{{ stats.total_favorites }}</div>
+            <div class="stat-desc">{{ stats.total_downloads }} descargas</div>
         </div>
     </div>
 
@@ -88,27 +88,95 @@
                             </svg>
                             Mis Audios
                         </h2>
-                        <button class="btn btn-secondary">
+                        <a href="{% url 'audios:upload' %}" class="btn btn-secondary">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>
                             Subir Audio
-                        </button>
+                        </a>
                     </div>
                     
-                    <div class="empty-state text-center py-8">
-                        <div class="text-6xl mb-4">🎵</div>
-                        <h3 class="text-lg font-semibold mb-2">Aún no has subido audios</h3>
-                        <p class="text-base-content/70 mb-4">
-                            Comienza a monetizar tu talento subiendo tus primeros audios.
-                        </p>
-                        <button class="btn btn-secondary">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                            </svg>
-                            Subir Mi Primer Audio
-                        </button>
-                    </div>
+                    {% if recent_audios %}
+                        <!-- Lista de audios recientes -->
+                        <div class="space-y-4">
+                            {% for audio in recent_audios %}
+                                <div class="flex items-center gap-4 p-4 hover:bg-base-50 rounded-lg transition-colors">
+                                    <!-- Imagen de portada -->
+                                    <div class="flex-shrink-0">
+                                        {% if audio.cover_image %}
+                                            <img src="{{ audio.cover_image.url }}" 
+                                                 alt="{{ audio.title }}"
+                                                 class="w-12 h-12 object-cover rounded-lg">
+                                        {% else %}
+                                            <div class="w-12 h-12 bg-base-200 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-music text-base-content/30"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Información del audio -->
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold text-sm">{{ audio.title }}</h4>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            {% if audio.status == 'published' %}
+                                                <span class="badge badge-success badge-xs">Publicado</span>
+                                            {% elif audio.status == 'pending' %}
+                                                <span class="badge badge-warning badge-xs">Pendiente</span>
+                                            {% elif audio.status == 'draft' %}
+                                                <span class="badge badge-outline badge-xs">Borrador</span>
+                                            {% endif %}
+                                            <span class="text-xs text-base-content/60">{{ audio.category.name }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Estadísticas -->
+                                    <div class="text-right">
+                                        <div class="text-sm font-semibold">${{ audio.price_standard }}</div>
+                                        <div class="text-xs text-base-content/60">
+                                            {{ audio.views_count }} vistas
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Acciones -->
+                                    <div class="flex gap-1">
+                                        {% if audio.status == 'published' %}
+                                            <a href="{% url 'audios:detail' audio.slug %}" 
+                                               class="btn btn-ghost btn-xs">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        {% endif %}
+                                        <a href="{% url 'audios:edit' audio.slug %}" 
+                                           class="btn btn-ghost btn-xs">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Botón para ver todos -->
+                        <div class="text-center mt-4">
+                            <a href="{% url 'audios:my_audios' %}" class="btn btn-outline btn-sm">
+                                Ver todos mis audios
+                                <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    {% else %}
+                        <!-- Estado vacío -->
+                        <div class="empty-state text-center py-8">
+                            <div class="text-6xl mb-4">🎵</div>
+                            <h3 class="text-lg font-semibold mb-2">Aún no has subido audios</h3>
+                            <p class="text-base-content/70 mb-4">
+                                Comienza a monetizar tu talento subiendo tus primeros audios.
+                            </p>
+                            <a href="{% url 'audios:upload' %}" class="btn btn-secondary">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                Subir Mi Primer Audio
+                            </a>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -161,26 +229,26 @@
                     <h3 class="card-title text-lg">Acciones Rápidas</h3>
                     
                     <div class="space-y-3">
-                        <button class="btn btn-secondary w-full justify-start">
+                        <a href="{% url 'audios:upload' %}" class="btn btn-secondary w-full justify-start">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                             </svg>
                             Subir Audio
-                        </button>
+                        </a>
                         
-                        <button class="btn btn-outline w-full justify-start">
+                        <a href="{% url 'audios:my_audios' %}" class="btn btn-outline w-full justify-start">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
                             </svg>
                             Gestionar Audios
-                        </button>
+                        </a>
                         
-                        <button class="btn btn-outline w-full justify-start">
+                        <a href="{% url 'audios:my_audios' %}" class="btn btn-outline w-full justify-start">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
                             Ver Estadísticas
-                        </button>
+                        </a>
                         
                         <a href="{% url 'users:profile' %}" class="btn btn-outline w-full justify-start">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,45 +263,46 @@
             <!-- Estado del perfil -->
             <div class="card bg-base-100 shadow-xl">
                 <div class="card-body">
-                    <h3 class="card-title text-lg">Estado del Perfil</h3>
+                    <h3 class="card-title text-lg">Resumen de Contenido</h3>
                     
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="text-sm">Información básica</span>
-                            <span class="badge badge-success badge-sm">✓</span>
+                            <span class="text-sm">Audios publicados</span>
+                            <span class="badge badge-success badge-sm">{{ stats.published_audios }}</span>
                         </div>
                         
+                        {% if stats.pending_audios > 0 %}
                         <div class="flex items-center justify-between">
-                            <span class="text-sm">Avatar</span>
-                            {% if user.profile.avatar %}
-                                <span class="badge badge-success badge-sm">✓</span>
-                            {% else %}
-                                <span class="badge badge-warning badge-sm">⚠</span>
-                            {% endif %}
+                            <span class="text-sm">Pendientes de revisión</span>
+                            <span class="badge badge-warning badge-sm">{{ stats.pending_audios }}</span>
                         </div>
+                        {% endif %}
+                        
+                        {% if stats.draft_audios > 0 %}
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm">Borradores</span>
+                            <span class="badge badge-outline badge-sm">{{ stats.draft_audios }}</span>
+                        </div>
+                        {% endif %}
                         
                         <div class="flex items-center justify-between">
-                            <span class="text-sm">Biografía</span>
-                            {% if user.profile.bio %}
-                                <span class="badge badge-success badge-sm">✓</span>
-                            {% else %}
-                                <span class="badge badge-warning badge-sm">⚠</span>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm">Nombre artístico</span>
-                            {% if user.profile.artist_name %}
-                                <span class="badge badge-success badge-sm">✓</span>
-                            {% else %}
-                                <span class="badge badge-error badge-sm">✗</span>
-                            {% endif %}
+                            <span class="text-sm">Total de audios</span>
+                            <span class="badge badge-primary badge-sm">{{ stats.total_audios }}</span>
                         </div>
                     </div>
                     
                     <div class="mt-4">
-                        <div class="text-xs text-center opacity-70 mb-2">Completitud del perfil</div>
-                        <progress class="progress progress-secondary w-full" value="{% if user.profile.artist_name %}75{% elif user.profile.bio %}50{% else %}25{% endif %}" max="100"></progress>
+                        <div class="text-xs text-center opacity-70 mb-2">
+                            {% if stats.total_audios > 0 %}
+                                Audios publicados: {{ stats.published_audios }}/{{ stats.total_audios }}
+                            {% else %}
+                                ¡Sube tu primer audio!
+                            {% endif %}
+                        </div>
+                        <progress class="progress progress-secondary w-full" 
+                                  value="{% if stats.total_audios > 0 %}{{ stats.published_audios|floatformat:0 }}{% else %}0{% endif %}" 
+                                  max="{% if stats.total_audios > 0 %}{{ stats.total_audios }}{% else %}1{% endif %}">
+                        </progress>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+
+{% block title %}Marketplace de Audios{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- Sidebar de filtros -->
+        <div class="lg:col-span-1">
+            <div class="card bg-base-100 shadow-lg sticky top-4">
+                <div class="card-body">
+                    <h3 class="card-title text-lg mb-4">
+                        <i class="fas fa-filter mr-2"></i>
+                        Filtros
+                    </h3>
+                    
+                    <form method="get" class="space-y-4">
+                        <!-- Búsqueda -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Buscar</span>
+                            </label>
+                            {{ form.search }}
+                        </div>
+                        
+                        <!-- Categoría -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Categoría</span>
+                            </label>
+                            {{ form.category }}
+                        </div>
+                        
+                        <!-- Género -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Género</span>
+                            </label>
+                            {{ form.genre }}
+                        </div>
+                        
+                        <!-- Precio -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Rango de precio</span>
+                            </label>
+                            <div class="grid grid-cols-2 gap-2">
+                                {{ form.min_price }}
+                                {{ form.max_price }}
+                            </div>
+                        </div>
+                        
+                        <!-- Ordenar -->
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Ordenar por</span>
+                            </label>
+                            {{ form.sort_by }}
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm flex-1">
+                                <i class="fas fa-search mr-1"></i>
+                                Filtrar
+                            </button>
+                            {% if active_filters %}
+                                <a href="{% url 'audios:list' %}" class="btn btn-outline btn-sm">
+                                    <i class="fas fa-times mr-1"></i>
+                                    Limpiar
+                                </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                    
+                    <!-- Estadísticas -->
+                    <div class="divider"></div>
+                    <div class="stats stats-vertical shadow">
+                        <div class="stat">
+                            <div class="stat-title">Total Audios</div>
+                            <div class="stat-value text-primary">{{ stats.total_audios }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Categorías populares -->
+                    <div class="mt-6">
+                        <h4 class="font-semibold mb-3">Categorías</h4>
+                        <div class="space-y-2">
+                            {% for category in stats.categories %}
+                                <a href="{% url 'audios:category' category.slug %}" 
+                                   class="flex justify-between items-center p-2 hover:bg-base-200 rounded">
+                                    <span class="text-sm">{{ category.name }}</span>
+                                    <span class="badge badge-outline">{{ category.audio_count }}</span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contenido principal -->
+        <div class="lg:col-span-3">
+            <!-- Header con resultados -->
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold">
+                        {% if request.GET.search %}
+                            Resultados para "{{ request.GET.search }}"
+                        {% else %}
+                            Todos los Audios
+                        {% endif %}
+                    </h1>
+                    <p class="text-base-content/70 mt-1">
+                        {{ audios.paginator.count }} audio{{ audios.paginator.count|pluralize }} encontrado{{ audios.paginator.count|pluralize }}
+                    </p>
+                </div>
+                
+                {% if user.is_authenticated and user.is_seller %}
+                    <a href="{% url 'audios:upload' %}" class="btn btn-primary">
+                        <i class="fas fa-plus mr-2"></i>
+                        Subir Audio
+                    </a>
+                {% endif %}
+            </div>
+            
+            <!-- Audios destacados -->
+            {% if stats.featured_audios and not request.GET.search %}
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold mb-4">
+                        <i class="fas fa-star text-yellow-500 mr-2"></i>
+                        Audios Destacados
+                    </h2>
+                    <div class="carousel carousel-center space-x-4 p-4 bg-base-200 rounded-box">
+                        {% for audio in stats.featured_audios %}
+                            <div class="carousel-item">
+                                <div class="card card-compact w-64 bg-base-100 shadow-md hover:shadow-lg transition-shadow">
+                                    {% if audio.cover_image %}
+                                        <figure>
+                                            <img src="{{ audio.cover_image.url }}" 
+                                                 alt="{{ audio.title }}" 
+                                                 class="w-full h-32 object-cover">
+                                        </figure>
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h3 class="card-title text-sm">{{ audio.title|truncatechars:40 }}</h3>
+                                        <p class="text-xs text-base-content/70">{{ audio.seller.get_full_name }}</p>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-lg font-bold text-primary">${{ audio.price_standard }}</span>
+                                            <a href="{% url 'audios:detail' audio.slug %}" class="btn btn-primary btn-xs">Ver</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Grid de audios -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {% for audio in audios %}
+                    <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow">
+                        {% if audio.cover_image %}
+                            <figure class="relative">
+                                <img src="{{ audio.cover_image.url }}" 
+                                     alt="{{ audio.title }}" 
+                                     class="w-full h-48 object-cover">
+                                {% if audio.is_featured %}
+                                    <div class="absolute top-2 right-2">
+                                        <div class="badge badge-warning">
+                                            <i class="fas fa-star mr-1"></i>
+                                            Destacado
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </figure>
+                        {% endif %}
+                        
+                        <div class="card-body">
+                            <h3 class="card-title text-lg">
+                                <a href="{% url 'audios:detail' audio.slug %}" 
+                                   class="link link-hover">
+                                    {{ audio.title }}
+                                </a>
+                            </h3>
+                            
+                            <p class="text-sm text-base-content/70 mb-2">
+                                <i class="fas fa-user mr-1"></i>
+                                <a href="{% url 'audios:seller_profile' audio.seller.username %}" 
+                                   class="link link-hover">
+                                    {{ audio.seller.get_full_name }}
+                                </a>
+                            </p>
+                            
+                            <div class="flex gap-2 mb-3">
+                                <span class="badge badge-outline text-xs">{{ audio.category.name }}</span>
+                                <span class="badge badge-ghost text-xs">{{ audio.genre.name }}</span>
+                            </div>
+                            
+                            <!-- Tags -->
+                            {% if audio.tags.exists %}
+                                <div class="flex flex-wrap gap-1 mb-3">
+                                    {% for tag in audio.tags.all|slice:":3" %}
+                                        <span class="badge badge-sm" style="background-color: {{ tag.color }}20; color: {{ tag.color }};">
+                                            {{ tag.name }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Estadísticas -->
+                            <div class="flex justify-between items-center text-xs text-base-content/60 mb-3">
+                                <span><i class="fas fa-eye mr-1"></i>{{ audio.views_count }}</span>
+                                <span><i class="fas fa-download mr-1"></i>{{ audio.downloads_count }}</span>
+                                <span><i class="fas fa-heart mr-1"></i>{{ audio.favorites_count }}</span>
+                                {% if audio.duration %}
+                                    <span><i class="fas fa-clock mr-1"></i>{{ audio.duration|date:"i:s" }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="card-actions justify-between items-center">
+                                <div class="text-left">
+                                    <div class="text-2xl font-bold text-primary">${{ audio.price_standard }}</div>
+                                    <div class="text-xs text-base-content/60">Licencia Estándar</div>
+                                </div>
+                                <div class="flex gap-2">
+                                    {% if user.is_authenticated %}
+                                        <button class="btn btn-ghost btn-sm favorite-btn" 
+                                                data-audio-slug="{{ audio.slug }}">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                    {% endif %}
+                                    <a href="{% url 'audios:detail' audio.slug %}" 
+                                       class="btn btn-primary btn-sm">
+                                        Ver Detalles
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-span-full text-center py-12">
+                        <div class="text-6xl text-base-content/30 mb-4">
+                            <i class="fas fa-music"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">No se encontraron audios</h3>
+                        <p class="text-base-content/70 mb-4">
+                            {% if request.GET.search %}
+                                Intenta con otros términos de búsqueda o ajusta los filtros.
+                            {% else %}
+                                Aún no hay audios disponibles en esta categoría.
+                            {% endif %}
+                        </p>
+                        {% if user.is_authenticated and user.is_seller %}
+                            <a href="{% url 'audios:upload' %}" class="btn btn-primary">
+                                <i class="fas fa-plus mr-2"></i>
+                                Sube el primer audio
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Paginación -->
+            {% if audios.has_other_pages %}
+                <div class="flex justify-center mt-8">
+                    <div class="btn-group">
+                        {% if audios.has_previous %}
+                            <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ audios.previous_page_number }}" 
+                               class="btn btn-outline">«</a>
+                        {% endif %}
+                        
+                        {% for num in audios.paginator.page_range %}
+                            {% if audios.number == num %}
+                                <button class="btn btn-active">{{ num }}</button>
+                            {% elif num > audios.number|add:'-3' and num < audios.number|add:'3' %}
+                                <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ num }}" 
+                                   class="btn btn-outline">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if audios.has_next %}
+                            <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ audios.next_page_number }}" 
+                               class="btn btn-outline">»</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Funcionalidad de favoritos
+    document.querySelectorAll('.favorite-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const audioSlug = this.dataset.audioSlug;
+            fetch(`/audios/${audioSlug}/favorito/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const icon = this.querySelector('i');
+                    if (data.is_favorite) {
+                        icon.className = 'fas fa-heart text-red-500';
+                        this.classList.add('text-red-500');
+                    } else {
+                        icon.className = 'fas fa-heart';
+                        this.classList.remove('text-red-500');
+                    }
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
