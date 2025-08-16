@@ -38,7 +38,10 @@ class CustomUserCreationForm(UserCreationForm):
         })
     )
     user_type = forms.ChoiceField(
-        choices=UserType.choices,
+        choices=[
+            (UserType.BUYER, 'Comprador'),
+            (UserType.SELLER, 'Vendedor/Creador')
+        ],
         required=True,
         widget=forms.Select(attrs={
             'class': 'select select-bordered w-full'
@@ -81,6 +84,13 @@ class CustomUserCreationForm(UserCreationForm):
         if User.objects.filter(username=username).exists():
             raise ValidationError('Este nombre de usuario ya está en uso.')
         return username
+    
+    def clean_user_type(self):
+        """Validar que no se pueda seleccionar administrador"""
+        user_type = self.cleaned_data.get('user_type')
+        if user_type == UserType.ADMIN:
+            raise ValidationError('No puedes registrarte como administrador. Los permisos de administrador son asignados por el personal autorizado.')
+        return user_type
     
     def save(self, commit=True):
         user = super().save(commit=False)

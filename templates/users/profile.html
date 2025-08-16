@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_extras %}
+
+{% block title %}Mi Perfil - Marketplace de Audios{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header del perfil -->
+        <div class="bg-base-100 shadow-xl rounded-lg overflow-hidden mb-8">
+            <div class="bg-gradient-to-r from-primary to-secondary h-32"></div>
+            <div class="relative px-6 pb-6">
+                <div class="flex flex-col md:flex-row items-center md:items-end -mt-16 md:-mt-12">
+                    <!-- Avatar -->
+                    <div class="avatar">
+                        <div class="w-24 h-24 rounded-full ring ring-base-100 ring-offset-base-100 ring-offset-2">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" alt="{{ user.get_full_name }}" />
+                            {% else %}
+                                <div class="bg-primary text-primary-content rounded-full w-24 h-24 flex items-center justify-center text-2xl font-bold">
+                                    {{ user.first_name.0 }}{{ user.last_name.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Info básica -->
+                    <div class="md:ml-6 text-center md:text-left mt-4 md:mt-0 flex-1">
+                        <h1 class="text-2xl font-bold">{{ user.get_full_name }}</h1>
+                        <p class="text-base-content/70">{{ user.email }}</p>
+                        <div class="mt-2">
+                            <span class="badge {% if user.is_seller %}badge-secondary{% elif user.is_admin_user %}badge-accent{% else %}badge-primary{% endif %}">
+                                {{ user.get_user_type_display }}
+                            </span>
+                            {% if user.is_verified %}
+                                <span class="badge badge-success ml-2">✓ Verificado</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Botones de acción -->
+                    <div class="mt-4 md:mt-0">
+                        <button onclick="edit_modal.showModal()" class="btn btn-primary">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                            Editar Perfil
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Información personal -->
+            <div class="lg:col-span-2">
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h2 class="card-title">Información Personal</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm font-medium opacity-70">Nombre completo</label>
+                                <p class="text-base font-medium">{{ user.get_full_name }}</p>
+                            </div>
+                            
+                            <div>
+                                <label class="text-sm font-medium opacity-70">Email</label>
+                                <p class="text-base">{{ user.email }}</p>
+                            </div>
+                            
+                            {% if user.phone %}
+                            <div>
+                                <label class="text-sm font-medium opacity-70">Teléfono</label>
+                                <p class="text-base">{{ user.phone }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if profile.birth_date %}
+                            <div>
+                                <label class="text-sm font-medium opacity-70">Fecha de nacimiento</label>
+                                <p class="text-base">{{ profile.birth_date|date:"d/m/Y" }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if profile.country %}
+                            <div>
+                                <label class="text-sm font-medium opacity-70">País</label>
+                                <p class="text-base">{{ profile.country }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if profile.city %}
+                            <div>
+                                <label class="text-sm font-medium opacity-70">Ciudad</label>
+                                <p class="text-base">{{ profile.city }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if profile.bio %}
+                        <div class="mt-4">
+                            <label class="text-sm font-medium opacity-70">Biografía</label>
+                            <p class="text-base mt-1">{{ profile.bio|linebreaks }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if profile.website %}
+                        <div class="mt-4">
+                            <label class="text-sm font-medium opacity-70">Sitio web</label>
+                            <a href="{{ profile.website }}" target="_blank" class="link link-primary">
+                                {{ profile.website }}
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel lateral -->
+            <div class="space-y-6">
+                <!-- Estadísticas -->
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h3 class="card-title text-lg">Estadísticas</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="opacity-70">Miembro desde</span>
+                                <span class="font-medium">{{ user.date_joined|date:"M Y" }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="opacity-70">Último acceso</span>
+                                <span class="font-medium">{{ user.last_login|date:"d/m/Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información específica del vendedor -->
+                {% if user.is_seller and profile.artist_name %}
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <h3 class="card-title text-lg">Información de Artista</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-sm font-medium opacity-70">Nombre artístico</label>
+                                <p class="font-medium">{{ profile.artist_name }}</p>
+                            </div>
+                            {% if profile.genres %}
+                            <div>
+                                <label class="text-sm font-medium opacity-70">Géneros</label>
+                                <div class="flex flex-wrap gap-1 mt-1">
+                                    {% for genre in profile.genres|split:"," %}
+                                        <span class="badge badge-outline badge-sm">{{ genre|trim }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para editar perfil -->
+<dialog id="edit_modal" class="modal">
+    <div class="modal-box w-11/12 max-w-2xl">
+        <h3 class="font-bold text-lg mb-4">Editar Perfil</h3>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Avatar -->
+                <div class="md:col-span-2">
+                    <label class="form-control w-full">
+                        <div class="label">
+                            <span class="label-text">{{ form.avatar.label }}</span>
+                        </div>
+                        {{ form.avatar }}
+                    </label>
+                </div>
+                
+                <!-- Bio -->
+                <div class="md:col-span-2">
+                    <label class="form-control w-full">
+                        <div class="label">
+                            <span class="label-text">{{ form.bio.label }}</span>
+                        </div>
+                        {{ form.bio }}
+                    </label>
+                </div>
+                
+                <!-- Fecha de nacimiento -->
+                <div>
+                    <label class="form-control w-full">
+                        <div class="label">
+                            <span class="label-text">{{ form.birth_date.label }}</span>
+                        </div>
+                        {{ form.birth_date }}
+                    </label>
+                </div>
+                
+                <!-- País -->
+                <div>
+                    <label class="form-control w-full">
+                        <div class="label">
+                            <span class="label-text">{{ form.country.label }}</span>
+                        </div>
+                        {{ form.country }}
+                    </label>
+                </div>
+                
+                <!-- Ciudad -->
+                <div>
+                    <label class="form-control w-full">
+                        <div class="label">
+                            <span class="label-text">{{ form.city.label }}</span>
+                        </div>
+                        {{ form.city }}
+                    </label>
+                </div>
+                
+                <!-- Sitio web -->
+                <div>
+                    <label class="form-control w-full">
+                        <div class="label">
+                            <span class="label-text">{{ form.website.label }}</span>
+                        </div>
+                        {{ form.website }}
+                    </label>
+                </div>
+                
+                {% if user.is_seller %}
+                <!-- Nombre artístico -->
+                <div>
+                    <label class="form-control w-full">
+                        <div class="label">
+                            <span class="label-text">{{ form.artist_name.label }}</span>
+                        </div>
+                        {{ form.artist_name }}
+                    </label>
+                </div>
+                
+                <!-- Géneros -->
+                <div>
+                    <label class="form-control w-full">
+                        <div class="label">
+                            <span class="label-text">{{ form.genres.label }}</span>
+                        </div>
+                        {{ form.genres }}
+                    </label>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="modal-action">
+                <button type="button" class="btn" onclick="edit_modal.close()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+{% endblock %}
