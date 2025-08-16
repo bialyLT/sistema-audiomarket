@@ -1,0 +1,16 @@
+{
+  "name": "django-tailwind-project",
+  "version": "1.0.0",
+  "description": "Django project with Tailwind CSS and DaisyUI",
+  "main": "index.js",
+  "scripts": {
+    "build-css": "tailwindcss -i ./static/src/input.css -o ./static/css/output.css --watch",
+    "build-css-prod": "tailwindcss -i ./static/src/input.css -o ./static/css/output.css --minify",
+    "dev": "concurrently \"npm run build-css\" \"python manage.py runserver\"",
+    "update-browserslist": "npx update-browserslist-db@latest"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "daisyui": "^4.12.10"
+  }
+}

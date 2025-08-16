@@ -24,8 +24,12 @@ static/
 .DS_Store
 Thumbs.db
 
-# Node modules (if using frontend tools)
+# Node modules and dependencies
 node_modules/
+package-lock.json
+
+# Tailwind CSS compiled output
+static/css/output.css
 
 # Python virtual environment
 .venv/
